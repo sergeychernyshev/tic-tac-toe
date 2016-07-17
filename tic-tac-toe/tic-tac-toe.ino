@@ -87,16 +87,16 @@ void loop() {
   // only update strip once per loop and only if at least one button was updated
   if (any_button_pressed == 1) {
     strip.show();
-  }
 
-  winner = got_winner();
-  if (winner != 0) {
-    flash_finish(winner);
-  }
+    winner = got_winner();
+    if (winner != 0) {
+      flash_finish(winner);
+    }
 
-  // all buttons were pressed, nobody won
-  if (total_moves == buttons_number) {
-    flash_finish(0);
+    // all buttons were pressed, nobody won
+    if (total_moves == buttons_number) {
+      flash_finish(0);
+    }
   }
 
   //delay(25);
