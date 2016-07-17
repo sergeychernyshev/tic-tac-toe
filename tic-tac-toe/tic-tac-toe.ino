@@ -7,7 +7,7 @@ int buttons_number = 9;
 #define MIN_BRIGHTNESS 127
 #define MAX_BRIGHTNESS 255
 // brightness to go down to when fading in and out for visual effects
-#define FADE_LOW_BRIGHTNESS 50
+#define FADE_LOW_BRIGHTNESS 100
 
 int brightness = MAX_BRIGHTNESS;
 
@@ -103,21 +103,15 @@ void loop() {
 }
 
 int got_winner() {
-  int test;
-  int total_tests = 8;
-  int starts[] = {0, 1, 2, 0, 3, 6, 0, 2};
-  int increments[] = {3, 3, 3, 1, 1, 1, 4, 2};
-  
-  int s, i;
-  
-  for (test = 0; test < total_tests; test++) {
-    if (board[starts[test]] > 0 &&
-        board[starts[test]] == board[starts[test] + increments[test]] && 
-        board[starts[test]] == board[starts[test] + increments[test] * 2]) {
-      return board[starts[test]];
-    }
-  }
-  
+  if (board[0] > 0 && board[0] == board[1] && board[0] == board[2]) { return board[0]; }
+  if (board[5] > 0 && board[5] == board[4] && board[5] == board[3]) { return board[5]; }
+  if (board[6] > 0 && board[6] == board[7] && board[6] == board[8]) { return board[6]; }
+  if (board[0] > 0 && board[0] == board[5] && board[0] == board[6]) { return board[0]; }
+  if (board[1] > 0 && board[1] == board[4] && board[1] == board[7]) { return board[1]; }
+  if (board[2] > 0 && board[2] == board[3] && board[2] == board[8]) { return board[2]; }
+  if (board[0] > 0 && board[0] == board[4] && board[0] == board[8]) { return board[0]; }
+  if (board[2] > 0 && board[2] == board[4] && board[2] == board[6]) { return board[2]; }
+
   return 0;
 }
 
