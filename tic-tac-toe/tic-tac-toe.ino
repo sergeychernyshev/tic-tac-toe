@@ -58,7 +58,7 @@ int total_moves = 0;
 
 void loop() {
   int i;
-  int number_of_button_pressed = 0;
+  int number_of_buttons_pressed = 0;
   int winner = 0;
   int buttons_pressed[] = {
     0, 0, 0,
@@ -70,19 +70,19 @@ void loop() {
   for(i = 0; i < buttons_number; i++) {
     // check again if buttons are still pressed
     if (digitalRead(button_pins[i]) == LOW) {
-      number_of_button_pressed++;
+      number_of_buttons_pressed++;
       pressed_index = i; // only use it if number_of_buttons_pressed equals 1
     }
   }
 
   // if no buttons pressed, wait and loop again
-  if (number_of_button_pressed == 0) {
+  if (number_of_buttons_pressed == 0) {
     delay(50);
     return;
   }
 
   // if too many buttons pressed, ignore it and wait a bit longer until checking again
-  if (number_of_button_pressed > 1) {
+  if (number_of_buttons_pressed > 1) {
     delay(300);
     return;
   }
