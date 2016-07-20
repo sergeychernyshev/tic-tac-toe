@@ -58,59 +58,72 @@ int total_moves = 0;
 
 void loop() {
   int i;
-  int any_button_pressed = 0;
+  int number_of_button_pressed = 0;
   int winner = 0;
-  int game_over = 0;
+  int buttons_pressed[] = {
+    0, 0, 0,
+    0, 0, 0,
+    0, 0, 0
+  };
+  int pressed_index;
   
   for(i = 0; i < buttons_number; i++) {
-    // only allow pressing unpressed buttons
-    if (board[i] == 0 && digitalRead(button_pins[i]) == LOW) {
-      board[i] = player;
-      any_button_pressed = 1;
-      total_moves += 1;
-
-      if (board[i] == 1) {
-        strip.setPixelColor(i, strip.Color(0, 0, brightness)); // blue
-      }
-      
-      if (board[i] == 2) {
-        strip.setPixelColor(i, strip.Color(0, brightness, 0)); // green
-      }
-
-      if (player == 1) {
-        player = 2;
-      } else {
-        player = 1;
-      }
-
-      break; // if one is pressed, stop checking the rest of the buttons
+    // check again if buttons are still pressed
+    if (digitalRead(button_pins[i]) == LOW) {
+      number_of_button_pressed++;
+      pressed_index = i; // only use it if number_of_buttons_pressed equals 1
     }
+  }
+
+  // if no buttons pressed, wait and loop again
+  if (number_of_button_pressed == 0) {
+    delay(50);
+    return;
+  }
+
+  // if too many buttons pressed, ignore it and wait a bit longer until checking again
+  if (number_of_button_pressed > 1) {
+    delay(300);
+    return;
+  }
+
+  // if pressed button was previously pressed, ignore it
+  if (board[pressed_index] > 0) {
+    delay(50);
+    return;
+  }
+
+  // change board if presses were successful
+  board[pressed_index] = player;
+  total_moves += 1;
+
+  if (board[pressed_index] == 1) {
+    strip.setPixelColor(pressed_index, strip.Color(0, 0, brightness)); // blue
   }
   
-  // only update strip once per loop and only if at least one button was updated
-  if (any_button_pressed == 1) {
-    strip.show();
-
-    game_over = 0;
-
-    winner = got_winner();
-    if (winner != 0) {
-      flash_finish(winner);
-      game_over = 1;
-    }
-
-    // all buttons were pressed, nobody won
-    if (total_moves == buttons_number) {
-      flash_finish(0);
-      game_over = 1;
-    }
-
-    if (game_over == 0) {
-      delay(200);
-    }
+  if (board[pressed_index] == 2) {
+    strip.setPixelColor(pressed_index, strip.Color(0, brightness, 0)); // green
   }
 
-  delay(50);
+  if (player == 1) {
+    player = 2;
+  } else {
+    player = 1;
+  }
+
+  strip.show();
+
+  winner = got_winner();
+  if (winner != 0) {
+    flash_finish(winner);
+  }
+
+  // all buttons were pressed, nobody won
+  if (total_moves == buttons_number) {
+    flash_finish(0);
+  }
+
+  delay(300); // wait a bit to make sure second buttons is not pressed too fast
 }
 
 int got_winner() {
