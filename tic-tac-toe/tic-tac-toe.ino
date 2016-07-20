@@ -12,8 +12,10 @@ int buttons_number = 9;
 int brightness = MAX_BRIGHTNESS;
 
 #define END_OF_GAME_FADE_NUMBER 3
-#define END_OF_GAME_FADE_STEPS 20
-#define END_OF_GAME_TIME_MS 300
+#define FADE_STEPS 20
+#define FADE_TIME_MS 300
+
+#define INACTIVITY_MS 60000L
 
 // Parameter 1 = number of pixels in strip
 // Parameter 2 = Arduino pin number (most are valid)
@@ -56,6 +58,8 @@ int player = 1;
 
 int total_moves = 0;
 
+long inactive_for = 0;
+
 void loop() {
   int i;
   int number_of_buttons_pressed = 0;
@@ -67,6 +71,12 @@ void loop() {
   };
   int pressed_index;
   
+  // if inactive for 3 minutes, turn off
+  if (total_moves > 0 && inactive_for > INACTIVITY_MS) {
+    fade_out(0);
+    reset_game();
+  }
+
   for(i = 0; i < buttons_number; i++) {
     // check again if buttons are still pressed
     if (digitalRead(button_pins[i]) == LOW) {
@@ -78,16 +88,20 @@ void loop() {
   // if no buttons pressed, wait and loop again
   if (number_of_buttons_pressed == 0) {
     delay(50);
+    inactive_for += 50;
     return;
   }
 
   // if too many buttons pressed, ignore it and wait a bit longer until checking again
   if (number_of_buttons_pressed > 1) {
     delay(300);
+    inactive_for += 300;
     return;
   }
 
-  // if pressed button was previously pressed, ignore it
+  inactive_for = 0; // reset inactivity timer
+
+  // if pressed button was previously pressed, ignore it (but reset inactivity timer)
   if (board[pressed_index] > 0) {
     delay(50);
     return;
@@ -123,7 +137,7 @@ void loop() {
     flash_finish(0);
   }
 
-  delay(300); // wait a bit to make sure second buttons is not pressed too fast
+  delay(300); // wait a bit to make sure second buttons are not pressed too fast
 }
 
 int got_winner() {
@@ -139,12 +153,26 @@ int got_winner() {
   return 0;
 }
 
+// Resets game to initial state
+void reset_game() {
+  int i;
+
+  for(i = 0; i < buttons_number; i++) {
+    strip.setPixelColor(i, strip.Color(0, 0, 0)); // off
+    board[i] = 0;
+  }
+  strip.show();
+
+  total_moves = 0;
+  player = 1;
+}
+
 void flash_finish(int winner) {
   int i;
   int fade;
   int fade_brightness;
-  int fade_brightness_step = (brightness - FADE_LOW_BRIGHTNESS) / END_OF_GAME_FADE_STEPS;
-  int fade_brightness_step_time = END_OF_GAME_TIME_MS / END_OF_GAME_FADE_STEPS / 2;
+  int fade_brightness_step = (brightness - FADE_LOW_BRIGHTNESS) / FADE_STEPS;
+  int fade_brightness_step_time = FADE_TIME_MS / FADE_STEPS / 2;
 
   for (fade = 0; fade < END_OF_GAME_FADE_NUMBER; fade++) {
     // run fade twice - up, then down
@@ -201,13 +229,30 @@ void flash_finish(int winner) {
     }
   }
 
-  for(i = 0; i < buttons_number; i++) {
-    strip.setPixelColor(i, strip.Color(0, 0, 0)); // off
-    board[i] = 0;
+  reset_game();
+}
+
+void fade_out(int fade_to_brightness) {
+  int i;
+  int fade_brightness;
+  int fade_brightness_step = (brightness - fade_to_brightness) / FADE_STEPS;
+  int fade_brightness_step_time = FADE_TIME_MS / FADE_STEPS;
+
+  for (fade_brightness = brightness;
+    fade_brightness > fade_to_brightness;
+    fade_brightness -= fade_brightness_step
+  ) {
+    for(i = 0; i < buttons_number; i++) {
+      if (board[i] == 1) {
+        strip.setPixelColor(i, strip.Color(0, 0, fade_brightness)); // blue
+      }
+
+      if (board[i] == 2) {
+        strip.setPixelColor(i, strip.Color(0, fade_brightness, 0)); // green
+      }
+    }
+
+    strip.show();
+    delay(fade_brightness_step_time);
   }
-  
-  strip.show();
-  
-  total_moves = 0;
-  player = 1;
 }
