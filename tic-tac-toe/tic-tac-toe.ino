@@ -60,6 +60,7 @@ void loop() {
   int i;
   int any_button_pressed = 0;
   int winner = 0;
+  int game_over = 0;
   
   for(i = 0; i < buttons_number; i++) {
     // only allow pressing unpressed buttons
@@ -81,6 +82,8 @@ void loop() {
       } else {
         player = 1;
       }
+
+      break; // if one is pressed, stop checking the rest of the buttons
     }
   }
   
@@ -88,18 +91,26 @@ void loop() {
   if (any_button_pressed == 1) {
     strip.show();
 
+    game_over = 0;
+
     winner = got_winner();
     if (winner != 0) {
       flash_finish(winner);
+      game_over = 1;
     }
 
     // all buttons were pressed, nobody won
     if (total_moves == buttons_number) {
       flash_finish(0);
+      game_over = 1;
+    }
+
+    if (game_over == 0) {
+      delay(200);
     }
   }
 
-  //delay(25);
+  delay(50);
 }
 
 int got_winner() {
