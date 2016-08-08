@@ -17,3 +17,7 @@ and also some arcade wires and connectors:
 
 ### Schematic
 ![Game schematic](tic-tac-toe_schematic.png)
+
+## Eclosure
+Enclosure consists of a box and a lid and can be 3D-printed without support material:
+http://www.thingiverse.com/thing:1687483
